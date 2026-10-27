@@ -152,6 +152,21 @@ async function handleAdminLogin(e) {
   const username = adminElements.loginUsername.value.trim();
   const password = adminElements.loginPassword.value.trim();
 
+  // If in static / GitHub Pages mode
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    if (username === 'admin' && password === 'admin123') {
+      adminState.token = 'demo_admin_static_token';
+      localStorage.setItem('eventflow_admin_token', adminState.token);
+      hideLoginModal();
+      showToast('Welcome, Administrator!', 'success');
+      loadDashboardData();
+      return;
+    } else {
+      showLoginAlert('Invalid credentials. Use admin / admin123');
+      return;
+    }
+  }
+
   try {
     const res = await fetch('/api/admin/login', {
       method: 'POST',
@@ -173,11 +188,27 @@ async function handleAdminLogin(e) {
     showToast('Welcome, Administrator!', 'success');
     loadDashboardData();
   } catch (err) {
+    // If backend is unreachable, fallback to static auth if valid
+    if (username === 'admin' && password === 'admin123') {
+      window.__FORCE_CLIENT_DB__ = true;
+      adminState.token = 'demo_admin_static_token';
+      localStorage.setItem('eventflow_admin_token', adminState.token);
+      hideLoginModal();
+      showToast('Welcome, Administrator! (Offline Mode)', 'success');
+      loadDashboardData();
+      return;
+    }
     showLoginAlert(err.message || 'Login failed');
   }
 }
 
 async function verifySession() {
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    hideLoginModal();
+    loadDashboardData();
+    return;
+  }
+
   try {
     const res = await fetchWithAuth('/api/admin/stats');
     if (res.ok) {
@@ -187,6 +218,12 @@ async function verifySession() {
       handleAdminLogout();
     }
   } catch (err) {
+    if (window.ClientDB) {
+      window.__FORCE_CLIENT_DB__ = true;
+      hideLoginModal();
+      loadDashboardData();
+      return;
+    }
     handleAdminLogout();
   }
 }
@@ -230,6 +267,18 @@ function fetchWithAuth(url, options = {}) {
    DASHBOARD DATA & STATS
    ========================================================================== */
 async function loadDashboardData() {
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    const stats = window.ClientDB.getStats();
+    adminElements.statEvents.textContent = stats.totalEvents;
+    adminElements.statRegistrations.textContent = stats.totalRegistrations;
+    adminElements.statFillRate.textContent = `${stats.fillRate}%`;
+    adminElements.statCapacity.textContent = stats.totalCapacity;
+
+    adminState.events = window.ClientDB.getEvents();
+    renderEventsTable(adminState.events);
+    return;
+  }
+
   try {
     // 1. Fetch Stats
     const statsRes = await fetchWithAuth('/api/admin/stats');
@@ -249,7 +298,12 @@ async function loadDashboardData() {
       renderEventsTable(adminState.events);
     }
   } catch (err) {
-    console.error('Error loading dashboard:', err);
+    console.warn('Error loading dashboard via API, falling back to ClientDB:', err);
+    if (window.ClientDB) {
+      window.__FORCE_CLIENT_DB__ = true;
+      loadDashboardData();
+      return;
+    }
     showToast('Failed to load dashboard data', 'error');
   }
 }
@@ -404,6 +458,14 @@ async function handleSaveEvent(e) {
     description: adminElements.editorDescription.value.trim()
   };
 
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    window.ClientDB.saveEvent(payload, id);
+    closeEditorModal();
+    showToast(isEdit ? 'Event updated successfully!' : 'Event created successfully!', 'success');
+    loadDashboardData();
+    return;
+  }
+
   try {
     const url = isEdit ? `/api/admin/events/${id}` : '/api/admin/events';
     const method = isEdit ? 'PUT' : 'POST';
@@ -432,6 +494,13 @@ window.handleDeleteEvent = async function(id, title) {
   const confirmed = confirm(`Are you sure you want to delete the event "${title}"?\n\nThis will permanently delete the event and cancel all associated participant registrations.`);
   if (!confirmed) return;
 
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    window.ClientDB.deleteEvent(id);
+    showToast(`Event deleted successfully`, 'success');
+    loadDashboardData();
+    return;
+  }
+
   try {
     const res = await fetchWithAuth(`/api/admin/events/${id}`, {
       method: 'DELETE'
@@ -459,6 +528,18 @@ window.openParticipantsModal = async function(eventId) {
   adminElements.partModalEventMeta.textContent = '';
   adminElements.participantsTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px;">Loading roster...</td></tr>';
   adminElements.participantsModal.classList.add('active');
+
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    const event = window.ClientDB.getEventById(eventId);
+    const participants = window.ClientDB.getParticipants(eventId);
+
+    adminState.currentParticipants = participants;
+    adminElements.partModalEventTitle.textContent = event ? event.title : 'Event Participants';
+    adminElements.partModalEventMeta.textContent = `${participants.length} registered attendee${participants.length === 1 ? '' : 's'}`;
+
+    renderParticipantsTable();
+    return;
+  }
 
   try {
     const res = await fetchWithAuth(`/api/admin/events/${eventId}/participants`);
@@ -550,6 +631,14 @@ window.handleRemoveParticipant = async function(regId, name) {
   const confirmed = confirm(`Cancel registration for attendee "${name}"?`);
   if (!confirmed) return;
 
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    window.ClientDB.deleteRegistration(regId);
+    showToast(`Cancelled registration for ${name}`, 'success');
+    openParticipantsModal(adminState.currentEventId);
+    loadDashboardData();
+    return;
+  }
+
   try {
     const res = await fetchWithAuth(`/api/admin/registrations/${regId}`, {
       method: 'DELETE'
@@ -559,9 +648,7 @@ window.handleRemoveParticipant = async function(regId, name) {
     if (!res.ok) throw new Error(data.message || 'Failed to remove participant');
 
     showToast(`Cancelled registration for ${name}`, 'success');
-    // Refresh participants list
     openParticipantsModal(adminState.currentEventId);
-    // Refresh table & stats
     loadDashboardData();
   } catch (err) {
     showToast(err.message || 'Error removing participant', 'error');
@@ -570,9 +657,35 @@ window.handleRemoveParticipant = async function(regId, name) {
 
 function handleExportCsv() {
   if (!adminState.currentEventId) return;
-  // Trigger direct download with authorization token
+
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    const participants = window.ClientDB.getParticipants(adminState.currentEventId);
+    const headers = ['Ticket Number', 'Full Name', 'Email', 'Phone', 'Organization', 'Notes', 'Registration Date'];
+    const rows = participants.map(p => [
+      `"${p.ticket_number}"`,
+      `"${(p.full_name || '').replace(/"/g, '""')}"`,
+      `"${(p.email || '').replace(/"/g, '""')}"`,
+      `"${(p.phone || '').replace(/"/g, '""')}"`,
+      `"${(p.organization || '').replace(/"/g, '""')}"`,
+      `"${(p.notes || '').replace(/"/g, '""')}"`,
+      `"${p.created_at}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `event_${adminState.currentEventId}_attendees.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    showToast('CSV export downloaded successfully!', 'success');
+    return;
+  }
+
   const exportUrl = `/api/admin/events/${adminState.currentEventId}/participants/export`;
-  
   fetch(exportUrl, {
     headers: { 'Authorization': `Bearer ${adminState.token}` }
   })

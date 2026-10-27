@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: eventflow
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: ADMIN_SECRET
+        value: eventflow_admin_secret_token_2026

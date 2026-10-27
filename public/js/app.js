@@ -181,9 +181,21 @@ function initEventListeners() {
    DATA FETCHING & RENDERING
    ========================================================================== */
 async function loadEvents() {
+  elements.resultsCount.textContent = 'Searching events...';
+
+  // Check if static / GitHub Pages mode
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    state.events = window.ClientDB.getEvents({
+      category: state.selectedCategory,
+      search: state.searchQuery,
+      sort: state.sortBy
+    });
+    renderEvents();
+    updateLiveStats();
+    return;
+  }
+
   try {
-    elements.resultsCount.textContent = 'Searching events...';
-    
     const params = new URLSearchParams();
     if (state.selectedCategory && state.selectedCategory !== 'All') {
       params.append('category', state.selectedCategory);
@@ -206,7 +218,19 @@ async function loadEvents() {
     renderEvents();
     updateLiveStats();
   } catch (error) {
-    console.error('Error loading events:', error);
+    console.warn('Backend API unavailable, using ClientDB fallback:', error);
+    if (window.ClientDB) {
+      window.__FORCE_CLIENT_DB__ = true;
+      state.events = window.ClientDB.getEvents({
+        category: state.selectedCategory,
+        search: state.searchQuery,
+        sort: state.sortBy
+      });
+      renderEvents();
+      updateLiveStats();
+      return;
+    }
+
     elements.eventsGrid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px;">
         <p style="font-size: 1.2rem; color: var(--accent-rose); margin-bottom: 12px;">⚠️ Unable to load events right now.</p>
@@ -392,6 +416,35 @@ async function handleRegistrationSubmit(e) {
   // Toggle button loading state
   setRegistrationLoading(true);
 
+  if (window.ClientDB && window.ClientDB.isStaticMode()) {
+    try {
+      const reg = window.ClientDB.register({
+        event_id: eventId,
+        full_name: name,
+        email: email,
+        phone: phone,
+        organization: organization,
+        notes: notes
+      });
+
+      closeRegistrationModal();
+      showToast('Registration successful! Digital pass generated.', 'success');
+      openTicketModal(reg);
+      loadEvents();
+    } catch (err) {
+      if (err.isDuplicate) {
+        showRegAlert('warning', `Duplicate Registration: ${err.message}`);
+        showToast('You are already registered for this event!', 'error');
+      } else {
+        showRegAlert('error', err.message || 'Failed to complete registration.');
+        showToast(err.message || 'Error completing registration', 'error');
+      }
+    } finally {
+      setRegistrationLoading(false);
+    }
+    return;
+  }
+
   try {
     const res = await fetch(`/api/events/${eventId}/register`, {
       method: 'POST',
@@ -553,14 +606,24 @@ async function handleDoLookup() {
 
   try {
     let results = [];
-    if (term.includes('@')) {
-      const res = await fetch(`/api/events/lookup/email?email=${encodeURIComponent(term)}`);
-      const data = await res.json();
-      if (data.success && data.data) results = data.data;
+
+    if (window.ClientDB && window.ClientDB.isStaticMode()) {
+      if (term.includes('@')) {
+        results = window.ClientDB.lookupEmail(term);
+      } else {
+        const ticket = window.ClientDB.lookupTicket(term);
+        if (ticket) results = [ticket];
+      }
     } else {
-      const res = await fetch(`/api/events/lookup/ticket/${encodeURIComponent(term)}`);
-      const data = await res.json();
-      if (data.success && data.data) results = [data.data];
+      if (term.includes('@')) {
+        const res = await fetch(`/api/events/lookup/email?email=${encodeURIComponent(term)}`);
+        const data = await res.json();
+        if (data.success && data.data) results = data.data;
+      } else {
+        const res = await fetch(`/api/events/lookup/ticket/${encodeURIComponent(term)}`);
+        const data = await res.json();
+        if (data.success && data.data) results = [data.data];
+      }
     }
 
     if (results.length === 0) {
@@ -590,6 +653,15 @@ async function handleDoLookup() {
 
 window.viewLookupTicket = async function(ticketNumber) {
   try {
+    if (window.ClientDB && window.ClientDB.isStaticMode()) {
+      const ticket = window.ClientDB.lookupTicket(ticketNumber);
+      if (ticket) {
+        closeLookupModal();
+        openTicketModal(ticket);
+      }
+      return;
+    }
+
     const res = await fetch(`/api/events/lookup/ticket/${encodeURIComponent(ticketNumber)}`);
     const data = await res.json();
     if (data.success && data.data) {

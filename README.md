@@ -2,6 +2,13 @@
 
 A modern, functional, and visually stunning full-stack application for discovering events, registering attendees with instant digital passes, and managing events via an administrator dashboard.
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Madhunter024/Eventflow)
+[![Live GitHub Pages](https://img.shields.io/badge/Live_Demo-GitHub_Pages-22c55e?style=for-the-badge&logo=github)](https://madhunter024.github.io/Eventflow/)
+[![Deploy to Render](https://img.shields.io/badge/Deploy_to-Render-46E3B7?style=for-the-badge&logo=render)](https://render.com/deploy?repo=https://github.com/Madhunter024/Eventflow)
+
+* 🌐 **Source Code:** [https://github.com/Madhunter024/Eventflow](https://github.com/Madhunter024/Eventflow)
+* 🚀 **Live Demo (GitHub Pages):** [https://madhunter024.github.io/Eventflow/](https://madhunter024.github.io/Eventflow/)
+
 ---
 
 ## ✨ Features
@@ -149,23 +156,48 @@ All 14 tests will execute, validating health check, event listings, form validat
 
 ## ☁️ Deployment Guide
 
-This app has a single unified Node/Express backend that directly serves the static frontend, making deployment effortless:
+You can deploy this application directly from GitHub using either **GitHub Pages** (free, static & client-side database) or a **Full-Stack Cloud Host** (Render / Railway / Vercel with Node.js & SQLite).
 
-### Deploying to Render.com
-1. Push this project to a GitHub repository.
-2. Sign in to [Render](https://render.com) and create a **New Web Service**.
-3. Select your repository.
-4. Set:
+---
+
+### Option 1: Deploy Directly on GitHub Pages (Recommended for 100% GitHub Hosting)
+
+The repository includes a ready-to-run GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) and a Client-Side Database Engine (`ClientDB`) that automatically activates on GitHub Pages with identical features (event browsing, registration, duplicate prevention, ticket generation, and admin dashboard with CSV export).
+
+1. Push your latest code to GitHub:
+   ```bash
+   git add .
+   git commit -m "feat: add GitHub Pages action and deployment setup"
+   git push origin main
+   ```
+2. In your GitHub repository, navigate to:
+   👉 **Settings** → **Pages** (or go to `https://github.com/Madhunter024/Eventflow/settings/pages`)
+3. Under **Build and deployment > Source**, select:
+   👉 **`GitHub Actions`**
+4. That's it! GitHub Actions will automatically run and publish your live app at:
+   🌐 **`https://madhunter024.github.io/Eventflow/`**
+
+---
+
+### Option 2: Deploy to Render (Continuous Deployment from GitHub for Full-Stack Node.js)
+
+Render is free and connects directly to your GitHub repository so every `git push` automatically rebuilds and deploys your full Express & SQLite backend:
+
+1. Click the button or go to [Render Dashboard](https://dashboard.render.com):
+   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Madhunter024/Eventflow)
+2. Or in Render, click **New +** → **Web Service** → Select **`Madhunter024/Eventflow`**.
+3. Render will auto-detect `render.yaml` or you can confirm:
    * **Runtime:** `Node`
    * **Build Command:** `npm install`
    * **Start Command:** `npm start`
-5. Click **Deploy Web Service**. Render will generate a live HTTPS URL.
+4. Click **Create Web Service**. Your live HTTPS URL (e.g., `https://eventflow-xxxx.onrender.com`) will be active within minutes!
 
-### Deploying to Railway.app
-1. Create a project in [Railway](https://railway.app).
-2. Connect your GitHub repository.
-3. Railway automatically detects `package.json` and runs `npm install && npm start`.
-4. Add a public networking domain under Settings.
+---
+
+### Option 3: Deploy to Vercel (Continuous Deployment from GitHub)
+1. Go to [Vercel](https://vercel.com) and click **Add New...** → **Project**.
+2. Import **`Madhunter024/Eventflow`**.
+3. Vercel automatically uses the included `vercel.json` and deploys your site with serverless routing.
 
 ---
 
