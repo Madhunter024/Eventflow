@@ -62,12 +62,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = app.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+
+const server = app.listen(PORT, HOST, () => {
   console.log('==================================================');
   console.log(`✨ Event Registration Platform is live!`);
-  console.log(`🌐 Public App:      http://localhost:${PORT}`);
-  console.log(`🛡️  Admin Dashboard: http://localhost:${PORT}/admin`);
-  console.log(`📡 API Base:        http://localhost:${PORT}/api/events`);
+  console.log(`🌐 Public App:      http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
+  console.log(`🛡️  Admin Dashboard: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/admin`);
+  console.log(`📡 API Base:        http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/api/events`);
   console.log('==================================================');
 });
 
