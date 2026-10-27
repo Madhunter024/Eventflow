@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover, explore, and register for premier tech conferences, workshops, and music festivals. Real-time seat updates and instant digital ticket passes.">
+  <title>EventFlow — Discover & Register for Premier Events</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Ambient background glow orbs -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" id="nav-brand-logo">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">Event<span>Flow</span></div>
+      </a>
+
+      <nav class="nav-actions">
+        <button class="nav-btn" id="btn-open-lookup">
+          🎫 My Tickets
+        </button>
+        <a href="/admin" class="nav-btn" id="btn-nav-admin">
+          🛡️ Admin Portal
+        </a>
+        <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">
+          🌙
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-pill">
+        <span class="hero-pill-dot"></span>
+        <span>Live Registration Open for 2026</span>
+      </div>
+      <h1 class="hero-title">
+        Discover & Experience <br>
+        <span class="gradient-text">Unforgettable Events</span>
+      </h1>
+      <p class="hero-subtitle">
+        Explore curated technology summits, creative workshops, live concerts, and startup pitch nights. Register in seconds and receive your instant digital pass.
+      </p>
+
+      <!-- Live Stats Ribbon -->
+      <div class="stats-ribbon" id="stats-ribbon">
+        <div class="stat-item">
+          <span class="stat-icon">📅</span>
+          <div>
+            <div class="stat-number" id="stat-total-events">--</div>
+            <div class="stat-label">Upcoming Events</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">🎟️</span>
+          <div>
+            <div class="stat-number" id="stat-total-attendees">--</div>
+            <div class="stat-label">Registered Attendees</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⚡</span>
+          <div>
+            <div class="stat-number" id="stat-available-spots">--</div>
+            <div class="stat-label">Seats Remaining</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search & Filter Toolbar -->
+    <section class="toolbar-section">
+      <div class="search-filter-card">
+        <div class="search-row">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="search-input" 
+              class="search-input" 
+              placeholder="Search by event title, venue, city, or topic..." 
+              autocomplete="off"
+            >
+          </div>
+          <select id="sort-select" class="sort-select" aria-label="Sort events">
+            <option value="date-asc">📅 Date: Soonest First</option>
+            <option value="popularity">🔥 Most Popular</option>
+            <option value="date-desc">🗓️ Date: Furthest First</option>
+          </select>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="category-pills" id="category-pills-container">
+          <button class="filter-pill active" data-category="All">All Events</button>
+          <button class="filter-pill" data-category="Technology">Technology</button>
+          <button class="filter-pill" data-category="Music & Arts">Music & Arts</button>
+          <button class="filter-pill" data-category="Design">Design</button>
+          <button class="filter-pill" data-category="Business">Business</button>
+          <button class="filter-pill" data-category="Workshops">Workshops</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events Grid Section -->
+    <section class="events-section">
+      <div class="section-header">
+        <h2 class="section-title">Explore Events</h2>
+        <span class="results-count" id="results-count">Loading events...</span>
+      </div>
+
+      <!-- Events Grid Container -->
+      <div class="events-grid" id="events-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== REGISTRATION MODAL ==================== -->
+  <div class="modal-overlay" id="registration-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" id="btn-close-reg-modal" aria-label="Close modal">✕</button>
+      
+      <div class="modal-header-banner">
+        <img id="modal-event-image" src="" alt="Event cover">
+        <div class="modal-header-gradient"></div>
+      </div>
+
+      <div class="modal-body">
+        <h3 class="form-title" id="modal-event-title">Event Title</h3>
+        <p class="form-subtitle" id="modal-event-description">Event short description</p>
+
+        <!-- Event Quick Info Pill Bar -->
+        <div class="event-meta-pill-bar">
+          <div class="event-meta-pill">
+            <span>📅</span>
+            <strong id="modal-event-date">Nov 20, 2026</strong>
+          </div>
+          <div class="event-meta-pill">
+            <span>⏰</span>
+            <strong id="modal-event-time">09:00 AM</strong>
+          </div>
+          <div class="event-meta-pill">
+            <span>📍</span>
+            <strong id="modal-event-venue">San Francisco</strong>
+          </div>
+          <div class="event-meta-pill">
+            <span>🎟️</span>
+            <strong id="modal-event-seats">50 seats left</strong>
+          </div>
+        </div>
+
+        <!-- Alert Notice Box -->
+        <div class="alert-box" id="reg-alert-box">
+          <span id="reg-alert-icon">⚠️</span>
+          <span id="reg-alert-text">Error message</span>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registration-form" novalidate>
+          <input type="hidden" id="reg-event-id">
+
+          <div class="form-group">
+            <label class="form-label" for="reg-name">
+              Full Name <span class="req">*</span>
+            </label>
+            <div class="form-input-control">
+              <span class="input-icon">👤</span>
+              <input 
+                type="text" 
+                id="reg-name" 
+                class="form-input" 
+                placeholder="e.g. Maya Lin" 
+                required
+              >
+            </div>
+            <div class="field-error-msg" id="error-reg-name">Please enter your full name.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-email">
+              Email Address <span class="req">*</span>
+            </label>
+            <div class="form-input-control">
+              <span class="input-icon">✉️</span>
+              <input 
+                type="email" 
+                id="reg-email" 
+                class="form-input" 
+                placeholder="name@company.com" 
+                required
+              >
+            </div>
+            <div class="field-error-msg" id="error-reg-email">Please enter a valid email address.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-phone">
+              Phone Number <span class="req">*</span>
+            </label>
+            <div class="form-input-control">
+              <span class="input-icon">📞</span>
+              <input 
+                type="tel" 
+                id="reg-phone" 
+                class="form-input" 
+                placeholder="+1 (555) 000-0000" 
+                required
+              >
+            </div>
+            <div class="field-error-msg" id="error-reg-phone">Please enter your contact phone number.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-organization">
+              Organization / Company (Optional)
+            </label>
+            <div class="form-input-control">
+              <span class="input-icon">🏢</span>
+              <input 
+                type="text" 
+                id="reg-organization" 
+                class="form-input" 
+                placeholder="e.g. Acme Tech Corp / Independent"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-notes">
+              Special Requests or Inquiries (Optional)
+            </label>
+            <textarea 
+              id="reg-notes" 
+              class="form-textarea" 
+              placeholder="Dietary requests, accessibility assistance, or topics of interest..."
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-registration" style="width: 100%; padding: 14px; font-size: 1rem;">
+            <span id="btn-reg-text">Complete Free Registration</span>
+            <span id="btn-reg-spinner" style="display: none;">⏳ Processing...</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TICKET PASS CONFIRMATION MODAL ==================== -->
+  <div class="modal-overlay" id="ticket-modal">
+    <div class="modal-card" style="max-width: 580px;">
+      <button class="modal-close-btn" id="btn-close-ticket-modal" aria-label="Close modal">✕</button>
+
+      <div class="modal-body" style="padding-top: 36px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
+          <h3 class="form-title">Registration Confirmed!</h3>
+          <p class="form-subtitle">Your digital ticket is issued and verified. Please save or print this pass for venue check-in.</p>
+        </div>
+
+        <!-- Digital Boarding Pass -->
+        <div class="ticket-pass" id="printable-ticket">
+          <div class="ticket-header">
+            <div class="ticket-brand">⚡ EVENTFLOW OFFICIAL PASS</div>
+            <div class="ticket-id-tag" id="ticket-display-id">EVT-2026-X8K9M</div>
+          </div>
+
+          <h2 class="ticket-event-title" id="ticket-display-event">Global AI & Tech Summit 2026</h2>
+
+          <div class="ticket-grid">
+            <div class="ticket-field">
+              <span class="ticket-field-label">Attendee Name</span>
+              <span class="ticket-field-value" id="ticket-display-name">Maya Lin</span>
+            </div>
+            <div class="ticket-field">
+              <span class="ticket-field-label">Email Address</span>
+              <span class="ticket-field-value" id="ticket-display-email">maya@example.com</span>
+            </div>
+            <div class="ticket-field">
+              <span class="ticket-field-label">Date & Time</span>
+              <span class="ticket-field-value" id="ticket-display-datetime">Nov 20, 2026 • 09:00 AM</span>
+            </div>
+            <div class="ticket-field">
+              <span class="ticket-field-label">Venue Location</span>
+              <span class="ticket-field-value" id="ticket-display-venue">Metropolis Center, Hall A</span>
+            </div>
+          </div>
+
+          <div class="ticket-barcode-area">
+            <svg class="barcode-svg" viewBox="0 0 200 40" fill="currentColor">
+              <!-- Stylized Barcode SVG lines -->
+              <rect x="0" y="0" width="4" height="40"/>
+              <rect x="8" y="0" width="2" height="40"/>
+              <rect x="14" y="0" width="6" height="40"/>
+              <rect x="24" y="0" width="3" height="40"/>
+              <rect x="32" y="0" width="5" height="40"/>
+              <rect x="42" y="0" width="2" height="40"/>
+              <rect x="48" y="0" width="7" height="40"/>
+              <rect x="60" y="0" width="3" height="40"/>
+              <rect x="68" y="0" width="5" height="40"/>
+              <rect x="78" y="0" width="2" height="40"/>
+              <rect x="84" y="0" width="6" height="40"/>
+              <rect x="94" y="0" width="3" height="40"/>
+              <rect x="102" y="0" width="6" height="40"/>
+              <rect x="112" y="0" width="2" height="40"/>
+              <rect x="118" y="0" width="4" height="40"/>
+              <rect x="126" y="0" width="8" height="40"/>
+              <rect x="138" y="0" width="3" height="40"/>
+              <rect x="146" y="0" width="5" height="40"/>
+              <rect x="156" y="0" width="2" height="40"/>
+              <rect x="162" y="0" width="6" height="40"/>
+              <rect x="172" y="0" width="4" height="40"/>
+              <rect x="180" y="0" width="2" height="40"/>
+              <rect x="186" y="0" width="8" height="40"/>
+              <rect x="198" y="0" width="2" height="40"/>
+            </svg>
+            <div class="ticket-notice">Present this pass at venue security for rapid RFID/Barcode admission.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btn-print-pass">
+            🖨️ Print / Save PDF
+          </button>
+          <button class="btn btn-secondary" id="btn-calendar-ics">
+            📅 Add to Calendar (.ics)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TICKET LOOKUP MODAL ==================== -->
+  <div class="modal-overlay" id="lookup-modal">
+    <div class="modal-card" style="max-width: 540px;">
+      <button class="modal-close-btn" id="btn-close-lookup-modal" aria-label="Close modal">✕</button>
+
+      <div class="modal-body" style="padding-top: 32px;">
+        <h3 class="form-title">Find Your Tickets</h3>
+        <p class="form-subtitle">Enter your Ticket Number (e.g. EVT-2026-...) or registered Email address to view and download your pass.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="lookup-input">Ticket ID or Email</label>
+          <div class="form-input-control">
+            <span class="input-icon">🔍</span>
+            <input 
+              type="text" 
+              id="lookup-input" 
+              class="form-input" 
+              placeholder="e.g. EVT-2026-1-J8PQ5 or your email"
+            >
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-do-lookup" style="width: 100%; margin-bottom: 16px;">
+          Search Registration
+        </button>
+
+        <div id="lookup-results-list" style="display: none; margin-top: 16px;">
+          <!-- Results injected dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>
+        <strong>EventFlow</strong> — Full-Stack Event Registration & Management Platform.
+      </div>
+      <div class="footer-links">
+        <a href="/" class="footer-link">Home</a>
+        <a href="/admin" class="footer-link">Admin Dashboard</a>
+        <a href="/api/health" class="footer-link" target="_blank">API Status</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/app.js"></script>
+</body>
+</html>

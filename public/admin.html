@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EventFlow Admin Dashboard — Create, update, and manage events and view registered attendees.">
+  <title>Admin Dashboard — EventFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <!-- Ambient background glow orbs -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Admin Navbar -->
+  <header class="admin-navbar">
+    <div class="container nav-container">
+      <a href="/admin" class="brand-logo">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-text">Event<span>Flow</span> <small style="font-size: 0.75rem; color: #818cf8; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-left: 6px;">ADMIN</small></div>
+      </a>
+
+      <nav class="nav-actions">
+        <a href="/" class="nav-btn" target="_blank">
+          🌐 View Public Site
+        </a>
+        <button class="nav-btn" id="btn-admin-logout" style="display: none;">
+          🚪 Sign Out
+        </button>
+        <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Theme" aria-label="Toggle dark/light theme">
+          🌙
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Admin Content -->
+  <main class="container" id="admin-main-view" style="display: none;">
+    <!-- Admin Header -->
+    <section class="admin-header">
+      <div class="admin-title-wrap">
+        <h1>Event Management Dashboard</h1>
+        <p>Monitor event registrations, organize venues, and manage participant rosters.</p>
+      </div>
+      <div>
+        <button class="btn btn-primary" id="btn-open-create-event">
+          ➕ Create New Event
+        </button>
+      </div>
+    </section>
+
+    <!-- Analytics Metric Cards Grid -->
+    <section class="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon">📅</div>
+        <div class="stat-card-info">
+          <h3 id="stat-admin-events">0</h3>
+          <p>Total Events</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon cyan">👥</div>
+        <div class="stat-card-info">
+          <h3 id="stat-admin-registrations">0</h3>
+          <p>Total Registrations</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon emerald">📊</div>
+        <div class="stat-card-info">
+          <h3 id="stat-admin-fillrate">0%</h3>
+          <p>Overall Fill Rate</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon amber">🎟️</div>
+        <div class="stat-card-info">
+          <h3 id="stat-admin-capacity">0</h3>
+          <p>Total Capacity</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events Management Table Container -->
+    <section class="admin-table-container">
+      <div class="table-toolbar">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 700;">All Events</h2>
+          <span style="font-size: 0.85rem; color: var(--text-muted);" id="admin-events-count">Loading events...</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <input 
+            type="text" 
+            id="admin-table-search" 
+            class="table-search-input" 
+            placeholder="Filter events by title or venue..."
+          >
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="responsive-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Category</th>
+              <th>Date & Time</th>
+              <th>Venue</th>
+              <th>Registrations</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-events-tbody">
+            <!-- Injected by admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== ADMIN LOGIN MODAL ==================== -->
+  <div class="modal-overlay active" id="login-modal">
+    <div class="modal-card login-card">
+      <div class="login-icon">🔐</div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Admin Authentication</h2>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+        Please sign in with administrator credentials to manage events.
+      </p>
+
+      <!-- Click to fill demo credentials badge -->
+      <div class="demo-credentials-box" id="btn-fill-demo">
+        💡 <strong>Quick Demo Login:</strong> Click here to auto-fill <br>
+        <code>admin</code> / <code>admin123</code>
+      </div>
+
+      <div class="alert-box" id="login-alert-box">
+        <span>⚠️</span>
+        <span id="login-alert-msg">Invalid credentials</span>
+      </div>
+
+      <form id="admin-login-form">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-username">Username</label>
+          <div class="form-input-control">
+            <span class="input-icon">👤</span>
+            <input 
+              type="text" 
+              id="login-username" 
+              class="form-input" 
+              placeholder="admin" 
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-password">Password</label>
+          <div class="form-input-control">
+            <span class="input-icon">🔑</span>
+            <input 
+              type="password" 
+              id="login-password" 
+              class="form-input" 
+              placeholder="••••••••" 
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-do-login" style="width: 100%; padding: 12px; margin-top: 10px;">
+          Sign In to Admin Portal
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== CREATE / EDIT EVENT MODAL ==================== -->
+  <div class="modal-overlay" id="event-editor-modal">
+    <div class="modal-card" style="max-width: 720px;">
+      <button class="modal-close-btn" id="btn-close-editor-modal">✕</button>
+
+      <div class="modal-body" style="padding-top: 32px;">
+        <h3 class="form-title" id="editor-modal-title">Create New Event</h3>
+        <p class="form-subtitle">Fill in the event details below. All fields marked with * are required.</p>
+
+        <form id="event-editor-form">
+          <input type="hidden" id="editor-event-id">
+
+          <div class="form-group">
+            <label class="form-label" for="editor-title">Event Title <span class="req">*</span></label>
+            <input type="text" id="editor-title" class="form-input" placeholder="e.g. AI & Cloud Architecture Summit 2026" required style="padding-left: 16px;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="editor-category">Category <span class="req">*</span></label>
+              <select id="editor-category" class="sort-select" style="width: 100%; padding: 12px 14px;" required>
+                <option value="Technology">Technology</option>
+                <option value="Music & Arts">Music & Arts</option>
+                <option value="Design">Design</option>
+                <option value="Business">Business</option>
+                <option value="Workshops">Workshops</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editor-capacity">Max Capacity <span class="req">*</span></label>
+              <input type="number" id="editor-capacity" class="form-input" placeholder="100" min="1" required style="padding-left: 16px;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="editor-date">Date <span class="req">*</span></label>
+              <input type="date" id="editor-date" class="form-input" required style="padding-left: 16px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editor-time">Time <span class="req">*</span></label>
+              <input type="text" id="editor-time" class="form-input" placeholder="e.g. 10:00 AM - 04:30 PM" required style="padding-left: 16px;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editor-venue">Venue & Location <span class="req">*</span></label>
+            <input type="text" id="editor-venue" class="form-input" placeholder="e.g. Grand Auditorium, Convention Center, Boston, MA" required style="padding-left: 16px;">
+          </div>
+
+          <!-- Banner Image Preset Selector -->
+          <div class="form-group">
+            <label class="form-label" for="editor-image">Banner Image URL <span class="req">*</span></label>
+            <input type="text" id="editor-image" class="form-input" placeholder="/assets/images/tech_summit.jpg" required style="padding-left: 16px; margin-bottom: 8px;">
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="setPresetImage('/assets/images/tech_summit.jpg')">
+                🖼️ Tech Summit
+              </button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="setPresetImage('/assets/images/music_festival.jpg')">
+                🎶 Music Festival
+              </button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="setPresetImage('/assets/images/design_jam.jpg')">
+                🎨 Design Jam
+              </button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="setPresetImage('/assets/images/startup_summit.jpg')">
+                💼 Startup Pitch
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="editor-badge">Badge Label</label>
+              <input type="text" id="editor-badge" class="form-input" placeholder="Featured / Trending / Workshop" style="padding-left: 16px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editor-status">Event Status</label>
+              <select id="editor-status" class="sort-select" style="width: 100%; padding: 12px 14px;">
+                <option value="active">Active (Open for registrations)</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editor-description">Description <span class="req">*</span></label>
+            <textarea id="editor-description" class="form-textarea" placeholder="Comprehensive event summary, keynote details, agenda highlights..." required style="min-height: 100px;"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-editor">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-event">Save Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PARTICIPANTS DRAWER / MODAL ==================== -->
+  <div class="modal-overlay" id="participants-modal">
+    <div class="modal-card participant-modal-card">
+      <button class="modal-close-btn" id="btn-close-participants-modal">✕</button>
+
+      <div class="modal-body" style="padding-top: 32px;">
+        <div class="participant-header-info">
+          <div>
+            <h3 class="form-title" id="part-modal-event-title">Event Participants</h3>
+            <p class="form-subtitle" id="part-modal-event-meta">45 Registered Attendees</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" id="btn-export-csv" style="padding: 8px 16px; font-size: 0.85rem;">
+              📥 Export to CSV
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <input 
+            type="text" 
+            id="part-search-input" 
+            class="table-search-input" 
+            placeholder="Filter attendees by name, email, or ticket ID..." 
+            style="width: 100%;"
+          >
+        </div>
+
+        <div style="max-height: 420px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+          <table class="responsive-table">
+            <thead>
+              <tr>
+                <th>Attendee</th>
+                <th>Ticket ID</th>
+                <th>Contact Info</th>
+                <th>Organization</th>
+                <th>Registered Date</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="participants-tbody">
+              <!-- Injected by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Admin JavaScript -->
+  <script src="/js/admin.js"></script>
+</body>
+</html>
